@@ -1,5 +1,8 @@
 package net.craftersland.itemrestrict.restrictions;
 
+import net.craftersland.itemrestrict.ItemRestrict;
+import net.craftersland.itemrestrict.RestrictedItemsHandler.ActionType;
+import net.craftersland.itemrestrict.utils.MaterialData;
 import org.bukkit.Effect;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -16,21 +19,17 @@ import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.bukkit.inventory.ItemStack;
 
-import net.craftersland.itemrestrict.ItemRestrict;
-import net.craftersland.itemrestrict.RestrictedItemsHandler.ActionType;
-import net.craftersland.itemrestrict.utils.MaterialData;
-
 public class Ownership implements Listener {
-	
-	private final ItemRestrict ir;
-	
-	public Ownership(ItemRestrict ir) {
-		this.ir = ir;
-	}
-	
-	//Inventory Click
-	@EventHandler(priority = EventPriority.LOWEST)
-	private void onItemClicked(InventoryClickEvent event) {
+
+    private final ItemRestrict ir;
+
+    public Ownership(ItemRestrict ir) {
+        this.ir = ir;
+    }
+
+    //Inventory Click
+    @EventHandler(priority = EventPriority.LOWEST)
+    private void onItemClicked(InventoryClickEvent event) {
         event.getSlotType();
         if (event.getCurrentItem() != null) {
             Player p = (Player) event.getWhoClicked();
@@ -49,13 +48,13 @@ public class Ownership implements Listener {
 
         }
     }
-	
-	@SuppressWarnings("deprecation")
-	@EventHandler(priority = EventPriority.LOWEST)
-	private void onItemDrag(final InventoryDragEvent event) {
-		if (ir.getConfigHandler().getBoolean("General.Settings.OwnershipPlayerInvOnly")) {
-			Player p = (Player) event.getWhoClicked();
-			ItemStack cursorItem = event.getOldCursor();
+
+    @SuppressWarnings("deprecation")
+    @EventHandler(priority = EventPriority.LOWEST)
+    private void onItemDrag(final InventoryDragEvent event) {
+        if (ir.getConfigHandler().getBoolean("General.Settings.OwnershipPlayerInvOnly")) {
+            Player p = (Player) event.getWhoClicked();
+            ItemStack cursorItem = event.getOldCursor();
 
             MaterialData bannedInfo = ir.getRestrictedItemsHandler().isBanned(ActionType.Ownership, p, cursorItem.getType(), cursorItem.getDurability(), p.getLocation());
 
@@ -66,93 +65,93 @@ public class Ownership implements Listener {
                 ir.getConfigHandler().printMessage(p, "chatMessages.restricted", bannedInfo.reason);
             }
         }
-	}
-	
-	private void inventoryClickRestriction(InventoryClickEvent event, ItemStack currentItem, Player p, Boolean removeCursorItem) {
-		@SuppressWarnings("deprecation")
-		MaterialData bannedInfo = ir.getRestrictedItemsHandler().isBanned(ActionType.Ownership, p, currentItem.getType(), currentItem.getDurability(), p.getLocation());
-		
-		if (bannedInfo != null) {
-			event.setCancelled(true);
-			
-			if (event.getSlotType() == SlotType.ARMOR) {
-				if (p.getInventory().getHelmet() != null) {
-					if (p.getInventory().getHelmet().isSimilar(currentItem)) {
-						p.getInventory().setHelmet(null);
-					}
-				}
-				if (p.getInventory().getChestplate() != null) {
-					if (p.getInventory().getChestplate().isSimilar(currentItem)) {
-						p.getInventory().setChestplate(null);
-					}
-				}
-				if (p.getInventory().getLeggings() != null) {
-					if (p.getInventory().getLeggings().isSimilar(currentItem)) {
-						p.getInventory().setLeggings(null);
-					}
-				}
-				if (p.getInventory().getBoots() != null) {
-					if (p.getInventory().getBoots().isSimilar(currentItem)) {
-						p.getInventory().setBoots(null);
-					}
-				}
-			} else if (removeCursorItem) {
-				p.setItemOnCursor(null);
-			} else {
-				p.getInventory().remove(currentItem);
-				event.getInventory().remove(currentItem);
-			}
-			
-			ir.getSoundHandler().sendItemBreakSound(p);
-			ir.getConfigHandler().printMessage(p, "chatMessages.restrictedConfiscated", bannedInfo.reason);
-		}
-	}
-	
-	//Item Pickup
-	@SuppressWarnings("deprecation")
-	@EventHandler(priority = EventPriority.LOWEST)
-	private void onItemPickup(PlayerPickupItemEvent event) {
-		Player p = event.getPlayer();
-		ItemStack item = event.getItem().getItemStack();
-		
-		MaterialData bannedInfo = ir.getRestrictedItemsHandler().isBanned(ActionType.Ownership, p, item.getType(), item.getDurability(), p.getLocation());
-		
-		if (bannedInfo != null) {
-			event.setCancelled(true);
-			
-			event.getItem().remove();
-			
-			ir.getSoundHandler().sendItemBreakSound(p);
-			p.playEffect(event.getItem().getLocation(), Effect.MOBSPAWNER_FLAMES, 5);
-			ir.getConfigHandler().printMessage(p, "chatMessages.pickupRestricted", bannedInfo.reason);
-		}
-	}
-	
-	//Switch hotbar slot
-	@SuppressWarnings("deprecation")
-	@EventHandler(priority = EventPriority.LOWEST)
-	private void onItemHeldSwitch(PlayerItemHeldEvent event) {
-		int newSlot = event.getNewSlot();
-		Player p = event.getPlayer();
-		ItemStack item = p.getInventory().getItem(newSlot);
-		
-		if (item != null) {
-			MaterialData bannedInfo = ir.getRestrictedItemsHandler().isBanned(ActionType.Ownership, p, item.getType(), item.getDurability(), p.getLocation());
-			
-			if (bannedInfo != null) {
-				p.getInventory().setItem(newSlot, null);
-				
-				ir.getSoundHandler().sendItemBreakSound(p);
-				ir.getConfigHandler().printMessage(p, "chatMessages.restrictedConfiscated", bannedInfo.reason);
-			}
-		}
-	}
-	
-	//Creative event
-	@SuppressWarnings("deprecation")
-	@EventHandler(priority = EventPriority.LOWEST)
-	private void onCreativeEvents(InventoryCreativeEvent event) {
-		ItemStack cursorItem = event.getCursor();
+    }
+
+    private void inventoryClickRestriction(InventoryClickEvent event, ItemStack currentItem, Player p, Boolean removeCursorItem) {
+        @SuppressWarnings("deprecation")
+        MaterialData bannedInfo = ir.getRestrictedItemsHandler().isBanned(ActionType.Ownership, p, currentItem.getType(), currentItem.getDurability(), p.getLocation());
+
+        if (bannedInfo != null) {
+            event.setCancelled(true);
+
+            if (event.getSlotType() == SlotType.ARMOR) {
+                if (p.getInventory().getHelmet() != null) {
+                    if (p.getInventory().getHelmet().isSimilar(currentItem)) {
+                        p.getInventory().setHelmet(null);
+                    }
+                }
+                if (p.getInventory().getChestplate() != null) {
+                    if (p.getInventory().getChestplate().isSimilar(currentItem)) {
+                        p.getInventory().setChestplate(null);
+                    }
+                }
+                if (p.getInventory().getLeggings() != null) {
+                    if (p.getInventory().getLeggings().isSimilar(currentItem)) {
+                        p.getInventory().setLeggings(null);
+                    }
+                }
+                if (p.getInventory().getBoots() != null) {
+                    if (p.getInventory().getBoots().isSimilar(currentItem)) {
+                        p.getInventory().setBoots(null);
+                    }
+                }
+            } else if (removeCursorItem) {
+                p.setItemOnCursor(null);
+            } else {
+                p.getInventory().remove(currentItem);
+                event.getInventory().remove(currentItem);
+            }
+
+            ir.getSoundHandler().sendItemBreakSound(p);
+            ir.getConfigHandler().printMessage(p, "chatMessages.restrictedConfiscated", bannedInfo.reason);
+        }
+    }
+
+    //Item Pickup
+    @SuppressWarnings("deprecation")
+    @EventHandler(priority = EventPriority.LOWEST)
+    private void onItemPickup(PlayerPickupItemEvent event) {
+        Player p = event.getPlayer();
+        ItemStack item = event.getItem().getItemStack();
+
+        MaterialData bannedInfo = ir.getRestrictedItemsHandler().isBanned(ActionType.Ownership, p, item.getType(), item.getDurability(), p.getLocation());
+
+        if (bannedInfo != null) {
+            event.setCancelled(true);
+
+            event.getItem().remove();
+
+            ir.getSoundHandler().sendItemBreakSound(p);
+            p.playEffect(event.getItem().getLocation(), Effect.MOBSPAWNER_FLAMES, 5);
+            ir.getConfigHandler().printMessage(p, "chatMessages.pickupRestricted", bannedInfo.reason);
+        }
+    }
+
+    //Switch hotbar slot
+    @SuppressWarnings("deprecation")
+    @EventHandler(priority = EventPriority.LOWEST)
+    private void onItemHeldSwitch(PlayerItemHeldEvent event) {
+        int newSlot = event.getNewSlot();
+        Player p = event.getPlayer();
+        ItemStack item = p.getInventory().getItem(newSlot);
+
+        if (item != null) {
+            MaterialData bannedInfo = ir.getRestrictedItemsHandler().isBanned(ActionType.Ownership, p, item.getType(), item.getDurability(), p.getLocation());
+
+            if (bannedInfo != null) {
+                p.getInventory().setItem(newSlot, null);
+
+                ir.getSoundHandler().sendItemBreakSound(p);
+                ir.getConfigHandler().printMessage(p, "chatMessages.restrictedConfiscated", bannedInfo.reason);
+            }
+        }
+    }
+
+    //Creative event
+    @SuppressWarnings("deprecation")
+    @EventHandler(priority = EventPriority.LOWEST)
+    private void onCreativeEvents(InventoryCreativeEvent event) {
+        ItemStack cursorItem = event.getCursor();
 
         Player p = (Player) event.getWhoClicked();
 
@@ -166,13 +165,13 @@ public class Ownership implements Listener {
             ir.getConfigHandler().printMessage(p, "chatMessages.restrictedConfiscated", bannedInfo.reason);
         }
     }
-	
-	//Interact event
-	@SuppressWarnings("deprecation")
-	@EventHandler(priority = EventPriority.LOWEST)
-	private void onInteract(PlayerInteractEvent event) {
-		Player p = event.getPlayer();
-		ItemStack item = p.getItemInHand();
+
+    //Interact event
+    @SuppressWarnings("deprecation")
+    @EventHandler(priority = EventPriority.LOWEST)
+    private void onInteract(PlayerInteractEvent event) {
+        Player p = event.getPlayer();
+        ItemStack item = p.getItemInHand();
 
         MaterialData bannedInfo = ir.getRestrictedItemsHandler().isBanned(ActionType.Ownership, p, item.getType(), item.getDurability(), p.getLocation());
 
@@ -184,23 +183,23 @@ public class Ownership implements Listener {
             ir.getConfigHandler().printMessage(p, "chatMessages.restrictedConfiscated", bannedInfo.reason);
         }
     }
-	
-	//Item drop
-	@SuppressWarnings("deprecation")
-	@EventHandler(priority = EventPriority.LOWEST)
-	private void onItemDrop(PlayerDropItemEvent event) {
-		Player p = event.getPlayer();
-		ItemStack item = event.getItemDrop().getItemStack();
-		
-		MaterialData bannedInfo = ir.getRestrictedItemsHandler().isBanned(ActionType.Ownership, p, item.getType(), item.getDurability(), p.getLocation());
-		
-		if (bannedInfo != null) {
-			event.getItemDrop().remove();
-			p.setItemInHand(null);
-			
-			ir.getSoundHandler().sendItemBreakSound(p);
-			ir.getConfigHandler().printMessage(p, "chatMessages.restrictedConfiscated", bannedInfo.reason);
-		}
-	}
+
+    //Item drop
+    @SuppressWarnings("deprecation")
+    @EventHandler(priority = EventPriority.LOWEST)
+    private void onItemDrop(PlayerDropItemEvent event) {
+        Player p = event.getPlayer();
+        ItemStack item = event.getItemDrop().getItemStack();
+
+        MaterialData bannedInfo = ir.getRestrictedItemsHandler().isBanned(ActionType.Ownership, p, item.getType(), item.getDurability(), p.getLocation());
+
+        if (bannedInfo != null) {
+            event.getItemDrop().remove();
+            p.setItemInHand(null);
+
+            ir.getSoundHandler().sendItemBreakSound(p);
+            ir.getConfigHandler().printMessage(p, "chatMessages.restrictedConfiscated", bannedInfo.reason);
+        }
+    }
 
 }
