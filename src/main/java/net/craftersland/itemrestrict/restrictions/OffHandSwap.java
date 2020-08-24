@@ -11,7 +11,7 @@ import net.craftersland.itemrestrict.utils.MaterialData;
 
 public class OffHandSwap implements Listener {
 	
-	private ItemRestrict ir;
+	private final ItemRestrict ir;
 	
 	public OffHandSwap(ItemRestrict ir) {
 		this.ir = ir;

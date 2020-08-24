@@ -8,7 +8,7 @@ import org.bukkit.entity.Player;
 
 public class CommandHandler implements CommandExecutor {
 	
-    private ItemRestrict itemrestrict;
+    private final ItemRestrict itemrestrict;
 	
 	public CommandHandler(ItemRestrict itemrestrict) {
 		this.itemrestrict = itemrestrict;

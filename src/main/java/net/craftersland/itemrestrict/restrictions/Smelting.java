@@ -14,7 +14,7 @@ import org.bukkit.inventory.ItemStack;
 
 public class Smelting implements Listener {
 	
-	private ItemRestrict ir;
+	private final ItemRestrict ir;
 	
 	public Smelting(ItemRestrict ir) {
 		this.ir = ir;
@@ -25,7 +25,7 @@ public class Smelting implements Listener {
 	private void onItemCrafted(FurnaceSmeltEvent event) {
 		ItemStack item = event.getSource();
 		Furnace f = (Furnace) event.getBlock().getState();
-		if (f.getInventory().getViewers().isEmpty() == false) {
+		if (!f.getInventory().getViewers().isEmpty()) {
 			Player p = (Player) f.getInventory().getViewers().get(0);
 			
 			MaterialData bannedInfo = ir.getRestrictedItemsHandler().isBanned(ActionType.Smelting, p, item.getType(), item.getDurability(), p.getLocation());

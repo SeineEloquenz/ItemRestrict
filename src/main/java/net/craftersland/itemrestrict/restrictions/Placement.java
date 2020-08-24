@@ -11,7 +11,7 @@ import net.craftersland.itemrestrict.utils.MaterialData;
 
 public class Placement implements Listener {
 	
-	private ItemRestrict ir;
+	private final ItemRestrict ir;
 	
 	public Placement(ItemRestrict ir) {
 		this.ir = ir;
@@ -30,7 +30,7 @@ public class Placement implements Listener {
 				
 				ir.getSoundHandler().sendEndermanTeleportSound(event.getPlayer());
 				ir.getConfigHandler().printMessage(event.getPlayer(), "chatMessages.placementRestricted", bannedInfo.reason);
-			} else if (ir.is19Server == true) {
+			} else {
 				MaterialData bannedInfo2 = ir.getRestrictedItemsHandler().isBanned(ActionType.Placement, event.getPlayer(), event.getPlayer().getInventory().getItemInOffHand().getType(), event.getPlayer().getInventory().getItemInOffHand().getDurability(), event.getPlayer().getLocation());
 				if (bannedInfo2 != null) {
 					event.setCancelled(true);

@@ -15,7 +15,7 @@ import org.bukkit.scheduler.BukkitTask;
 public class WorldScanner {
 	
 	private int nextChunkPercentile = 0;
-	private ItemRestrict ir;
+	private final ItemRestrict ir;
 	
 	public WorldScanner(ItemRestrict ir) {
 		this.ir = ir;
@@ -26,52 +26,49 @@ public class WorldScanner {
 		//runs every minute and scans 5% of loaded chunks.
 		int delay = ir.getConfigHandler().getInteger("General.WorldScannerDelay") * 60;
 		
-		BukkitTask task = Bukkit.getScheduler().runTaskTimerAsynchronously(ir, new Runnable() {
-			public void run() {
-				ItemRestrict.log.info("WorldScanner Task Started...");
-				ArrayList<World> worlds;
-				if(ir.worldBanned.size() > 0) {
-					if (ir.enforcementWorlds.size() == 0) {
-						worlds = (ArrayList<World>) Bukkit.getServer().getWorlds();
-					} else {
-						worlds = ir.enforcementWorlds;
-					}
-					
-					for(int i = 0; i < worlds.size(); i++) {
-						World world = worlds.get(i);
-						try {
-							Chunk [] chunks = world.getLoadedChunks();
-							
-							//scan 5% of chunks each pass
-    						int firstChunk = (int)(chunks.length * (nextChunkPercentile / 100f));
-    						int lastChunk = (int)(chunks.length * ((nextChunkPercentile + 5) / 100f));
-    						
-    						//for each chunk to be scanned
-    						for(int j = firstChunk; j < lastChunk; j++) {
-    							Chunk chunk = chunks[j];
-    							
-    							//scan all its blocks for removable blocks
-    							for(int x = 0; x < 16; x++) {
-    								for(int y = 0; y < chunk.getWorld().getMaxHeight(); y++) {
-    									for(int z = 0; z < 16; z++) {
-    										final Block block = chunk.getBlock(x, y, z);
-    										removeBlock(block);
-    									}
-    								}
-    							}
-    						}
-						} catch(Exception e) {
-							ItemRestrict.log.warning("World Scanner Error: " + e.getMessage());
-							e.printStackTrace();
-						}
-					}
-					
-					nextChunkPercentile += 5;
-					if(nextChunkPercentile >= 100) nextChunkPercentile = 0;
-					ItemRestrict.log.info("WorldScanner Task Ended.");
-				}
-			}
-		}, 20L * delay, 20L * delay);
+		BukkitTask task = Bukkit.getScheduler().runTaskTimerAsynchronously(ir, () -> {
+            ItemRestrict.log.info("WorldScanner Task Started...");
+            ArrayList<World> worlds;
+            if(ir.worldBanned.size() > 0) {
+                if (ItemRestrict.enforcementWorlds.size() == 0) {
+                    worlds = (ArrayList<World>) Bukkit.getServer().getWorlds();
+                } else {
+                    worlds = ItemRestrict.enforcementWorlds;
+                }
+
+for (World world : worlds) {
+try {
+Chunk[] chunks = world.getLoadedChunks();
+
+//scan 5% of chunks each pass
+int firstChunk = (int) (chunks.length * (nextChunkPercentile / 100f));
+int lastChunk = (int) (chunks.length * ((nextChunkPercentile + 5) / 100f));
+
+//for each chunk to be scanned
+for (int j = firstChunk; j < lastChunk; j++) {
+Chunk chunk = chunks[j];
+
+//scan all its blocks for removable blocks
+for (int x = 0; x < 16; x++) {
+for (int y = 0; y < chunk.getWorld().getMaxHeight(); y++) {
+for (int z = 0; z < 16; z++) {
+final Block block = chunk.getBlock(x, y, z);
+removeBlock(block);
+}
+}
+}
+}
+} catch (Exception e) {
+ItemRestrict.log.warning("World Scanner Error: " + e.getMessage());
+e.printStackTrace();
+}
+}
+
+                nextChunkPercentile += 5;
+                if(nextChunkPercentile >= 100) nextChunkPercentile = 0;
+                ItemRestrict.log.info("WorldScanner Task Ended.");
+            }
+        }, 20L * delay, 20L * delay);
 		ir.worldScanner.clear();
 		ir.worldScanner.put(true, task.getTaskId());
 	}
@@ -81,20 +78,14 @@ public class WorldScanner {
 		MaterialData bannedInfo = ir.worldBanned.Contains(materialInfo);
 		boolean removeSkull = false;
 		if (bannedInfo == null) {
-			if (ir.getConfigHandler().getBoolean("General.RemoveSkulls") == true) {
+			if (ir.getConfigHandler().getBoolean("General.RemoveSkulls")) {
 				if (block.getType() == Material.LEGACY_SKULL) {
 					removeSkull = true;
 				}
 			}
 		}
-		if (bannedInfo != null || removeSkull == true) {
-			Bukkit.getScheduler().runTask(ir, new Runnable() {
-				@Override
-				public void run() {
-					block.setType(Material.AIR);		
-				}
-				
-			});
+		if (bannedInfo != null || removeSkull) {
+			Bukkit.getScheduler().runTask(ir, () -> block.setType(Material.AIR));
 			String msg;
 			if (bannedInfo != null) {
 				msg = bannedInfo.toString();

@@ -22,7 +22,7 @@ import net.craftersland.itemrestrict.utils.MaterialData;
 
 public class Ownership implements Listener {
 	
-	private ItemRestrict ir;
+	private final ItemRestrict ir;
 	
 	public Ownership(ItemRestrict ir) {
 		this.ir = ir;
@@ -31,44 +31,41 @@ public class Ownership implements Listener {
 	//Inventory Click
 	@EventHandler(priority = EventPriority.LOWEST)
 	private void onItemClicked(InventoryClickEvent event) {
-		if (event.getSlotType() != null) {
-			if (event.getCurrentItem() != null) {
-				Player p = (Player) event.getWhoClicked();
-				ItemStack currentItem = event.getCurrentItem();
-				ItemStack cursorItem = event.getCursor();
-				
-				if (ir.getConfigHandler().getBoolean("General.Settings.OwnershipPlayerInvOnly") == true) {
-					if (event.getInventory().getType() == InventoryType.PLAYER) {
-						inventoryClickRestriction(event, currentItem, p, false);
-					} else if (event.getRawSlot() >= event.getInventory().getSize()) {
-						inventoryClickRestriction(event, cursorItem, p, true);
-					}
-				} else {
-					inventoryClickRestriction(event, currentItem, p, false);
-				}
-				
-			}
-		}
-	}
+        event.getSlotType();
+        if (event.getCurrentItem() != null) {
+            Player p = (Player) event.getWhoClicked();
+            ItemStack currentItem = event.getCurrentItem();
+            ItemStack cursorItem = event.getCursor();
+
+            if (ir.getConfigHandler().getBoolean("General.Settings.OwnershipPlayerInvOnly")) {
+                if (event.getInventory().getType() == InventoryType.PLAYER) {
+                    inventoryClickRestriction(event, currentItem, p, false);
+                } else if (event.getRawSlot() >= event.getInventory().getSize()) {
+                    inventoryClickRestriction(event, cursorItem, p, true);
+                }
+            } else {
+                inventoryClickRestriction(event, currentItem, p, false);
+            }
+
+        }
+    }
 	
 	@SuppressWarnings("deprecation")
 	@EventHandler(priority = EventPriority.LOWEST)
 	private void onItemDrag(final InventoryDragEvent event) {
-		if (ir.getConfigHandler().getBoolean("General.Settings.OwnershipPlayerInvOnly") == true) {
+		if (ir.getConfigHandler().getBoolean("General.Settings.OwnershipPlayerInvOnly")) {
 			Player p = (Player) event.getWhoClicked();
 			ItemStack cursorItem = event.getOldCursor();
-			
-			if (cursorItem != null) {
-				MaterialData bannedInfo = ir.getRestrictedItemsHandler().isBanned(ActionType.Ownership, p, cursorItem.getType(), cursorItem.getDurability(), p.getLocation());
-				
-				if (bannedInfo != null) {
-					event.setCancelled(true);
-					
-					ir.getSoundHandler().sendItemBreakSound(p);
-					ir.getConfigHandler().printMessage(p, "chatMessages.restricted", bannedInfo.reason);
-				}
-			}
-		}
+
+            MaterialData bannedInfo = ir.getRestrictedItemsHandler().isBanned(ActionType.Ownership, p, cursorItem.getType(), cursorItem.getDurability(), p.getLocation());
+
+            if (bannedInfo != null) {
+                event.setCancelled(true);
+
+                ir.getSoundHandler().sendItemBreakSound(p);
+                ir.getConfigHandler().printMessage(p, "chatMessages.restricted", bannedInfo.reason);
+            }
+        }
 	}
 	
 	private void inventoryClickRestriction(InventoryClickEvent event, ItemStack currentItem, Player p, Boolean removeCursorItem) {
@@ -99,7 +96,7 @@ public class Ownership implements Listener {
 						p.getInventory().setBoots(null);
 					}
 				}
-			} else if (removeCursorItem == true) {
+			} else if (removeCursorItem) {
 				p.setItemOnCursor(null);
 			} else {
 				p.getInventory().remove(currentItem);
@@ -156,21 +153,19 @@ public class Ownership implements Listener {
 	@EventHandler(priority = EventPriority.LOWEST)
 	private void onCreativeEvents(InventoryCreativeEvent event) {
 		ItemStack cursorItem = event.getCursor();
-		
-		if (cursorItem != null) {
-			Player p = (Player) event.getWhoClicked();
-			
-			MaterialData bannedInfo = ir.getRestrictedItemsHandler().isBanned(ActionType.Ownership, p, cursorItem.getType(), cursorItem.getDurability(), p.getLocation());
-			
-			if (bannedInfo != null) {
-				event.setCancelled(true);
-				event.setCursor(null);
-				
-				ir.getSoundHandler().sendItemBreakSound(p);
-				ir.getConfigHandler().printMessage(p, "chatMessages.restrictedConfiscated", bannedInfo.reason);
-			}
-		}
-	}
+
+        Player p = (Player) event.getWhoClicked();
+
+        MaterialData bannedInfo = ir.getRestrictedItemsHandler().isBanned(ActionType.Ownership, p, cursorItem.getType(), cursorItem.getDurability(), p.getLocation());
+
+        if (bannedInfo != null) {
+            event.setCancelled(true);
+            event.setCursor(null);
+
+            ir.getSoundHandler().sendItemBreakSound(p);
+            ir.getConfigHandler().printMessage(p, "chatMessages.restrictedConfiscated", bannedInfo.reason);
+        }
+    }
 	
 	//Interact event
 	@SuppressWarnings("deprecation")
@@ -178,19 +173,17 @@ public class Ownership implements Listener {
 	private void onInteract(PlayerInteractEvent event) {
 		Player p = event.getPlayer();
 		ItemStack item = p.getItemInHand();
-		
-		if (item != null) {
-			MaterialData bannedInfo = ir.getRestrictedItemsHandler().isBanned(ActionType.Ownership, p, item.getType(), item.getDurability(), p.getLocation());
-			
-			if (bannedInfo != null) {
-				event.setCancelled(true);
-				p.setItemInHand(null);
-				
-				ir.getSoundHandler().sendItemBreakSound(p);
-				ir.getConfigHandler().printMessage(p, "chatMessages.restrictedConfiscated", bannedInfo.reason);
-			}
-		}
-	}
+
+        MaterialData bannedInfo = ir.getRestrictedItemsHandler().isBanned(ActionType.Ownership, p, item.getType(), item.getDurability(), p.getLocation());
+
+        if (bannedInfo != null) {
+            event.setCancelled(true);
+            p.setItemInHand(null);
+
+            ir.getSoundHandler().sendItemBreakSound(p);
+            ir.getConfigHandler().printMessage(p, "chatMessages.restrictedConfiscated", bannedInfo.reason);
+        }
+    }
 	
 	//Item drop
 	@SuppressWarnings("deprecation")

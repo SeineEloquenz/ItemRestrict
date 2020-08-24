@@ -11,7 +11,7 @@ import net.craftersland.itemrestrict.ItemRestrict;
 
 public class DisableRecipe {
 	
-	private ItemRestrict ir;
+	private final ItemRestrict ir;
 	
 	public DisableRecipe(ItemRestrict ir) {
 		this.ir = ir;
@@ -21,7 +21,7 @@ public class DisableRecipe {
 	
 	private void removeRecipe(ItemStack is) {
         Iterator<Recipe> it = Bukkit.getServer().recipeIterator();
-        Recipe recipe = null;
+        Recipe recipe;
         while (it.hasNext()) {
             recipe = it.next();
             if (recipe != null && recipe.getResult().isSimilar(is)) {
@@ -32,53 +32,41 @@ public class DisableRecipe {
     }
 	
 	public void disableRecipesTask(int delay) {
-		Bukkit.getScheduler().runTaskLaterAsynchronously(ir, new Runnable() {
+		Bukkit.getScheduler().runTaskLaterAsynchronously(ir, () -> {
+            if (!ir.craftingDisabled.isEmpty()) {
+                for (String s : ir.craftingDisabled) {
+                    String[] s1 = s.split(":");
+                    try {
+                        String name = s1[0];
+                        Material m = Material.getMaterial(name);
+ItemStack is = new ItemStack(m);
+                        if (!s1[1].contains("*")) {
+short b = Short.parseShort(s1[1]);
+is.setDurability(b);
+                        }
 
-			@SuppressWarnings("deprecation")
-			@Override
-			public void run() {
-				if (ir.craftingDisabled.isEmpty() == false) {
-					for (String s : ir.craftingDisabled) {
-						String[] s1 = s.split(":");
-						try {
-							String name = s1[0];
-							Material m = Material.getMaterial(name);
-                            ItemStack is = new ItemStack(m);
-							if (s1[1].contains("*") != true) {
-                                short b = Short.parseShort(s1[1]);
-                                is.setDurability(b);
-							} else {
-							}
-							
-							removeRecipe(is);
-						} catch (Exception e) {
-							ItemRestrict.log.warning("Failed to disable crafting for item: " + s1[0] + ":" + s1[1] + " . Error: " + e.getMessage());
-						}
-					}
-				}
-			}
-			
-		}, delay * 20L);
+                        removeRecipe(is);
+                    } catch (Exception e) {
+                        ItemRestrict.log.warning("Failed to disable crafting for item: " + s1[0] + ":" + s1[1] + " . Error: " + e.getMessage());
+                    }
+                }
+            }
+        }, delay * 20L);
 	}
 	
 	public void restoreRecipes() {
-		Bukkit.getScheduler().runTaskAsynchronously(ir, new Runnable() {
-
-			@Override
-			public void run() {
-				if (ir.disabledRecipes.isEmpty() == false) {
-					for (Recipe r : ir.disabledRecipes) {
-						try {
-							Bukkit.addRecipe(r);
-						} catch (Exception e) {
-							ItemRestrict.log.warning("Failed to restore disabled recipe for: " + r.getResult().getType().toString() + " .Error: " + e.getMessage());
-						}
-					}
-					ir.disabledRecipes.clear();
-				}
-			}
-			
-		});
+		Bukkit.getScheduler().runTaskAsynchronously(ir, () -> {
+            if (!ir.disabledRecipes.isEmpty()) {
+                for (Recipe r : ir.disabledRecipes) {
+                    try {
+                        Bukkit.addRecipe(r);
+                    } catch (Exception e) {
+                        ItemRestrict.log.warning("Failed to restore disabled recipe for: " + r.getResult().getType().toString() + " .Error: " + e.getMessage());
+                    }
+                }
+                ir.disabledRecipes.clear();
+            }
+        });
 	}
 
 }

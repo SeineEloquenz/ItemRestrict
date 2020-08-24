@@ -13,7 +13,7 @@ import net.craftersland.itemrestrict.utils.MaterialData;
 
 public class Drop implements Listener {
 	
-	private ItemRestrict ir;
+	private final ItemRestrict ir;
 	
 	public Drop(ItemRestrict ir) {
 		this.ir = ir;
@@ -22,7 +22,7 @@ public class Drop implements Listener {
 	@SuppressWarnings("deprecation")
 	@EventHandler(priority = EventPriority.LOWEST)
 	private void onItemDrop(PlayerDropItemEvent event) {
-		if (ir.getConfigHandler().getBoolean("General.Restrictions.DropBans") == true) {
+		if (ir.getConfigHandler().getBoolean("General.Restrictions.DropBans")) {
 			Player p = event.getPlayer();
 			ItemStack item = event.getItemDrop().getItemStack();
 			

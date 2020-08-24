@@ -13,7 +13,7 @@ import org.bukkit.inventory.ItemStack;
 
 public class Crafting implements Listener {
 	
-	private ItemRestrict ir;
+	private final ItemRestrict ir;
 	
 	public Crafting(ItemRestrict ir) {
 		this.ir = ir;
@@ -24,7 +24,7 @@ public class Crafting implements Listener {
 	private void onItemCrafted(PrepareItemCraftEvent event) {
 		if (event.getRecipe() != null) {
 			ItemStack item = event.getRecipe().getResult();
-			if (event.getViewers().isEmpty() == false) {
+			if (!event.getViewers().isEmpty()) {
 				Player p = (Player) event.getViewers().get(0);
 				
 				MaterialData bannedInfo = ir.getRestrictedItemsHandler().isBanned(ActionType.Crafting, p, item.getType(), item.getDurability(), p.getLocation());

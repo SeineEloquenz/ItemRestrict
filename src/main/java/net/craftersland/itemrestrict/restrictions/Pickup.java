@@ -16,7 +16,7 @@ import net.craftersland.itemrestrict.utils.MaterialData;
 
 public class Pickup implements Listener {
 	
-	private ItemRestrict ir;
+	private final ItemRestrict ir;
 	
 	public Pickup(ItemRestrict ir) {
 		this.ir = ir;
@@ -25,7 +25,7 @@ public class Pickup implements Listener {
 	@SuppressWarnings("deprecation")
 	@EventHandler(priority = EventPriority.LOWEST)
 	private void onItemPickup(PlayerPickupItemEvent event) {
-		if (ir.getConfigHandler().getBoolean("General.Restrictions.PickupBans") == true) {
+		if (ir.getConfigHandler().getBoolean("General.Restrictions.PickupBans")) {
 			Player p = event.getPlayer();
 			ItemStack item = event.getItem().getItemStack();
 			
@@ -49,8 +49,7 @@ public class Pickup implements Listener {
 	
 	private int getRandomInt() {
 		Random randomGenerator = new Random();
-		int randSlot = randomGenerator.nextInt(5);
-		return randSlot;
+        return randomGenerator.nextInt(5);
 	}
 
 }

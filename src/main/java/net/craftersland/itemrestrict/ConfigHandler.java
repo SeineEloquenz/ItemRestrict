@@ -11,7 +11,7 @@ import org.bukkit.entity.Player;
 
 public class ConfigHandler {
 	
-	private ItemRestrict ir;
+	private final ItemRestrict ir;
 	
 	public ConfigHandler(final ItemRestrict ir) {
 		this.ir = ir;
@@ -20,11 +20,11 @@ public class ConfigHandler {
 	
 	public void loadConfig() {
 		File pluginFolder = new File("plugins" + System.getProperty("file.separator") + ItemRestrict.pluginName);
-		if (pluginFolder.exists() == false) {
+		if (!pluginFolder.exists()) {
     		pluginFolder.mkdir();
     	}
 		File configFile = new File("plugins" + System.getProperty("file.separator") + ItemRestrict.pluginName + System.getProperty("file.separator") + "config.yml");
-		if (configFile.exists() == false) {
+		if (!configFile.exists()) {
 			ItemRestrict.log.info("No config file found! Creating new one...");
 			ir.saveDefaultConfig();
 		}
@@ -35,7 +35,7 @@ public class ConfigHandler {
     		ItemRestrict.log.severe("Could not load the config file! You need to regenerate the config! Error: " + e.getMessage());
 			e.printStackTrace();
     	}
-    	if (getBoolean("General.EnableOnAllWorlds") == true) {
+    	if (getBoolean("General.EnableOnAllWorlds")) {
     		ItemRestrict.log.info("Restrictions enabled on all worlds.");
     	} else {
     		getWorldsTask();
@@ -72,7 +72,7 @@ public class ConfigHandler {
 	//Send chat messages from config
 	public void printMessage(Player p, String messageKey, String reason) {
 		if (ir.getConfig().contains(messageKey)){
-			List<String> message = new ArrayList<String>();
+			List<String> message = new ArrayList<>();
 			message.add(ir.getConfig().getString(messageKey));
 			
 			if (reason != null) {
@@ -96,39 +96,29 @@ public class ConfigHandler {
 		final List<String> enabledWorlds = ir.getConfig().getStringList("General.Worlds");
 		ItemRestrict.log.info("Scanning for loaded worlds in 10 seconds...");
 		
-		Bukkit.getScheduler().runTaskLaterAsynchronously(ir, new Runnable() {
-
-			@Override
-			public void run() {
-				//validate that list
-				ir.enforcementWorlds = new ArrayList<World>();
-				ItemRestrict.log.info("Scanning for loaded worlds...");
-				for(int i = 0; i < enabledWorlds.size(); i++)
-				{
-					String worldName = enabledWorlds.get(i);
-					World world = ir.getServer().getWorld(worldName);
-					if(world == null)
-					{
-						ItemRestrict.log.warning("Error: There's no world named " + worldName + ".  Please update your config.yml.");
-					}
-					else
-					{
-						ir.enforcementWorlds.add(world);
-					}
-				}
-				if(enabledWorlds.size() == 0)
-				{			
-					ItemRestrict.log.warning("No worlds found listed in config! Restrictions will not take place!");
-				}
-				//List the world names found.
-				ArrayList<String> worldNames = new ArrayList<String>();
-				for (World x : ir.enforcementWorlds) {
-					worldNames.add(x.getName());
-				}
-				ItemRestrict.log.info("Plugin enabled on worlds: " + worldNames.toString());
-			}
-			
-		}, 200L);
+		Bukkit.getScheduler().runTaskLaterAsynchronously(ir, () -> {
+            //validate that list
+            ItemRestrict.enforcementWorlds = new ArrayList<>();
+            ItemRestrict.log.info("Scanning for loaded worlds...");
+for (String worldName : enabledWorlds) {
+World world = ir.getServer().getWorld(worldName);
+if (world == null) {
+ItemRestrict.log.warning("Error: There's no world named " + worldName + ".  Please update your config.yml.");
+} else {
+ItemRestrict.enforcementWorlds.add(world);
+}
+}
+            if(enabledWorlds.size() == 0)
+            {
+                ItemRestrict.log.warning("No worlds found listed in config! Restrictions will not take place!");
+            }
+            //List the world names found.
+            ArrayList<String> worldNames = new ArrayList<>();
+            for (World x : ItemRestrict.enforcementWorlds) {
+                worldNames.add(x.getName());
+            }
+            ItemRestrict.log.info("Plugin enabled on worlds: " + worldNames.toString());
+        }, 200L);
 	}
 
 }

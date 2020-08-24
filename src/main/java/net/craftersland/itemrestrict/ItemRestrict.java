@@ -33,30 +33,26 @@ import org.bukkit.plugin.java.JavaPlugin;
 public class ItemRestrict extends JavaPlugin {
 	
 	public static Logger log;
-	public static String pluginName = "ItemRestrict";
+	public static final String pluginName = "ItemRestrict";
 	
-	public static ArrayList<World> enforcementWorlds = new ArrayList<World>();
-	public static MaterialCollection ownershipBanned = new MaterialCollection();
-	public MaterialCollection craftingBanned = new MaterialCollection();
-	public MaterialCollection smeltingBanned = new MaterialCollection();
-	public List<String> craftingDisabled = new ArrayList<String>();
-	public List<String> smeltingDisabled = new ArrayList<String>();
-	public List<Recipe> disabledRecipes = new ArrayList<Recipe>();
-	public MaterialCollection brewingBanned = new MaterialCollection();
-	public MaterialCollection wearingBanned = new MaterialCollection();
-	public MaterialCollection creativeBanned = new MaterialCollection();
-	public MaterialCollection usageBanned = new MaterialCollection();
-	public MaterialCollection placementBanned = new MaterialCollection();
-	public MaterialCollection blockBreakBanned = new MaterialCollection();
-	public MaterialCollection pickupBanned = new MaterialCollection();
-	public MaterialCollection dropBanned = new MaterialCollection();
-	public MaterialCollection worldBanned = new MaterialCollection();
-	public Map<Boolean, Integer> worldScanner = new HashMap<Boolean, Integer>();
-	public Map<Boolean, Integer> wearingScanner = new HashMap<Boolean, Integer>();
-	
-	public boolean mcpcServer = false;
-	public boolean is19Server = true;
-	public boolean is112Server = false;
+	public static ArrayList<World> enforcementWorlds = new ArrayList<>();
+	public static final MaterialCollection ownershipBanned = new MaterialCollection();
+	public final MaterialCollection craftingBanned = new MaterialCollection();
+	public final MaterialCollection smeltingBanned = new MaterialCollection();
+	public final List<String> craftingDisabled = new ArrayList<>();
+	public final List<String> smeltingDisabled = new ArrayList<>();
+	public final List<Recipe> disabledRecipes = new ArrayList<>();
+	public final MaterialCollection brewingBanned = new MaterialCollection();
+	public final MaterialCollection wearingBanned = new MaterialCollection();
+	public final MaterialCollection creativeBanned = new MaterialCollection();
+	public final MaterialCollection usageBanned = new MaterialCollection();
+	public final MaterialCollection placementBanned = new MaterialCollection();
+	public final MaterialCollection blockBreakBanned = new MaterialCollection();
+	public final MaterialCollection pickupBanned = new MaterialCollection();
+	public final MaterialCollection dropBanned = new MaterialCollection();
+	public final MaterialCollection worldBanned = new MaterialCollection();
+	public final Map<Boolean, Integer> worldScanner = new HashMap<>();
+	public final Map<Boolean, Integer> wearingScanner = new HashMap<>();
 	
 	private static ConfigHandler configHandler;
 	private static RestrictedItemsHandler restrictedHandler;
@@ -67,7 +63,6 @@ public class ItemRestrict extends JavaPlugin {
 	
 	public void onEnable() {
 		log = getLogger();
-		checkServerVersion();
 		worldScanner.put(false, 0);
 		wearingScanner.put(false, 0);
 		
@@ -81,11 +76,7 @@ public class ItemRestrict extends JavaPlugin {
         //Load Classes
         ws = new WorldScanner(this);
         es = new WearingScanner(this);
-        if (is112Server == false) {
-        	ds = new DisableRecipe(this);
-        } else {
-        	log.warning("Removing recipes from the game is not possible in 1.12 due to a spigot bug: https://goo.gl/4v71Zv .Use CraftingBanned feature until this is fixed!");
-        }
+        ds = new DisableRecipe(this);
         sH = new SoundHandler(this);
         
         //Register Listeners
@@ -100,19 +91,17 @@ public class ItemRestrict extends JavaPlugin {
     	pm.registerEvents(new BlockBreak(this), this);
     	pm.registerEvents(new Pickup(this), this);
     	pm.registerEvents(new Drop(this), this);
-    	if (is19Server == true) {
-    		pm.registerEvents(new OffHandSwap(this), this);
-    	}
+    	pm.registerEvents(new OffHandSwap(this), this);
     	CommandHandler cH = new CommandHandler(this);
     	getCommand("itemrestrict").setExecutor(cH);
     	
     	printConsoleStatus();
     	
-    	if (configHandler.getBoolean("General.Restrictions.ArmorWearingBans") == true) {
+    	if (configHandler.getBoolean("General.Restrictions.ArmorWearingBans")) {
     		//Start the wearing scanner task
     		es.wearingScanTask();
     	}
-    	if (configHandler.getBoolean("General.WorldScannerON") == true) {
+    	if (configHandler.getBoolean("General.WorldScannerON")) {
     		//Start the world scanner task
     		ws.worldScanTask();
 		}
@@ -143,30 +132,24 @@ public class ItemRestrict extends JavaPlugin {
         restrictedHandler = new RestrictedItemsHandler(this);
         
         //Restore recipes
-        if (is112Server == false) {
-        	ds.restoreRecipes();
-        }
-        if (configHandler.getBoolean("General.WorldScannerON") == true && worldScanner.containsKey(false)) {
+        ds.restoreRecipes();
+        if (configHandler.getBoolean("General.WorldScannerON") && worldScanner.containsKey(false)) {
         	ws.worldScanTask();
-        } else if (configHandler.getBoolean("General.WorldScannerON") == false && worldScanner.containsKey(true)) {
+        } else if (!configHandler.getBoolean("General.WorldScannerON") && worldScanner.containsKey(true)) {
         	Bukkit.getScheduler().cancelTask(worldScanner.get(true));
         	worldScanner.clear();
         	worldScanner.put(false, 0);
         }
-        if (configHandler.getBoolean("General.Restrictions.ArmorWearingBans") == true && wearingScanner.containsKey(false)) {
+        if (configHandler.getBoolean("General.Restrictions.ArmorWearingBans") && wearingScanner.containsKey(false)) {
         	es.wearingScanTask();
-        } else if (configHandler.getBoolean("General.Restrictions.ArmorWearingBans") == false && wearingScanner.containsKey(true)) {
+        } else if (!configHandler.getBoolean("General.Restrictions.ArmorWearingBans") && wearingScanner.containsKey(true)) {
         	Bukkit.getScheduler().cancelTask(wearingScanner.get(true));
         	wearingScanner.clear();
         	wearingScanner.put(false, 0);
         }
         
         //Disable Recipes Task
-        if (is112Server == false) {
-        	ds.disableRecipesTask(1);
-        } else {
-        	log.warning("Removing recipes from the game is not possible in 1.12 due to a spigot bug: https://goo.gl/4v71Zv .Use CraftingBanned feature until this is fixed!");
-        }
+        ds.disableRecipesTask(1);
         
         printConsoleStatus();
         
@@ -180,55 +163,41 @@ public class ItemRestrict extends JavaPlugin {
 	}
 	
 	private void printConsoleStatus() {
-		if (configHandler.getBoolean("General.Restrictions.EnableBrewingBans") == true) {
+		if (configHandler.getBoolean("General.Restrictions.EnableBrewingBans")) {
     		log.info("Brewing restrictions enabled!");
     	} else {
     		log.info("Brewing restrictions disabled!");
     	}
-        if (configHandler.getBoolean("General.Restrictions.ArmorWearingBans") == true) {
+        if (configHandler.getBoolean("General.Restrictions.ArmorWearingBans")) {
     		log.info("Wearing restrictions enabled!");
     	} else {
     		log.info("Wearing restrictions disabled!");
     	}
-        if (configHandler.getBoolean("General.Restrictions.CreativeBans") == true) {
+        if (configHandler.getBoolean("General.Restrictions.CreativeBans")) {
     		log.info("Creative restrictions enabled!");
     	} else {
     		log.info("Creative restrictions disabled!");
     	}
-        if (configHandler.getBoolean("General.Restrictions.PickupBans") == true) {
+        if (configHandler.getBoolean("General.Restrictions.PickupBans")) {
     		log.info("Pickup restrictions enabled!");
     	} else {
     		log.info("Pickup restrictions disabled!");
     	}
-        if (configHandler.getBoolean("General.Restrictions.DropBans") == true) {
+        if (configHandler.getBoolean("General.Restrictions.DropBans")) {
     		log.info("Drop restrictions enabled!");
     	} else {
     		log.info("Drop restrictions disabled!");
     	}
-        if (configHandler.getBoolean("General.Restrictions.BreakBans") == true) {
+        if (configHandler.getBoolean("General.Restrictions.BreakBans")) {
     		log.info("Block break restrictions enabled!");
     	} else {
     		log.info("Block break restrictions disabled!");
     	}
-        if (configHandler.getBoolean("General.WorldScannerON") == true) {
+        if (configHandler.getBoolean("General.WorldScannerON")) {
     		log.info("WorldScanner is enabled!");
 		} else {
 			log.info("WorldScanner is disabled!");
 		}
-	}
-	
-	private void checkServerVersion() {
-		String[] serverVersion = Bukkit.getBukkitVersion().split("-");
-	    String version = serverVersion[0];
-	    log.info("Server version detected: " + version);
-	    if (version.matches("1.6.4")) {
-	    	mcpcServer = true;
-	    	is19Server = false;
-	    } else if (version.matches("1.7.10") || version.matches("1.8") || version.matches("1.8.3") || version.matches("1.8.8") || version.matches("1.8.7") || version.matches("1.8.6") || version.matches("1.8.5") || version.matches("1.8.4")) {
-	    	is19Server = false;
-	    } else if (version.matches("1.12") || version.matches("1.12.1") || version.matches("1.12.2")) {
-	    	is112Server = true;
-	    }
 	}
 	
 	//Getting other classes public

@@ -4,11 +4,11 @@ import org.bukkit.Material;
 
 public class MaterialData {
 	
-	public Material type;
-	public short data;
-	public boolean allDataValues;
-	public String description;
-	public String reason;
+	public final Material type;
+	public final short data;
+	public final boolean allDataValues;
+	public final String description;
+	public final String reason;
 	
 	public MaterialData(Material type, short data, String description, String reason) {
 		this.type = type;
@@ -36,7 +36,7 @@ public class MaterialData {
 	
 	@Override
 	public String toString() {
-		String returnValue = String.valueOf(this.type) + ":" + (this.allDataValues?"*":String.valueOf(this.data));
+		String returnValue = this.type + ":" + (this.allDataValues?"*":String.valueOf(this.data));
 		if(this.description != null) returnValue += ":" + this.description + ":" + this.reason;
 		
 		return returnValue;

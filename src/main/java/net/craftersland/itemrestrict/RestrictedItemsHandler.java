@@ -14,14 +14,13 @@ import org.bukkit.entity.Player;
 
 public class RestrictedItemsHandler {
 	
-	private ItemRestrict itemrestrict;
-	private File restrictedItemsFile;
-	
-	public RestrictedItemsHandler(ItemRestrict itemrestrict) {
+	private final ItemRestrict itemrestrict;
+
+    public RestrictedItemsHandler(ItemRestrict itemrestrict) {
 		this.itemrestrict = itemrestrict;
 		
 		try {
-			restrictedItemsFile = new File("plugins" + System.getProperty("file.separator") + ItemRestrict.pluginName + System.getProperty("file.separator") + "RestrictedItems.yml");
+            File restrictedItemsFile = new File("plugins" + System.getProperty("file.separator") + ItemRestrict.pluginName + System.getProperty("file.separator") + "RestrictedItems.yml");
 			
 			//Create RestrictedItems.yml and/or load it
 			if (!restrictedItemsFile.exists()) {
@@ -37,7 +36,7 @@ public class RestrictedItemsHandler {
 			//
 			List<String> OwnershipBanned = ymlFormat.getStringList("OwnershipBanned");
 			//parse the strings from the config file
-			parseMaterialListFromConfig(OwnershipBanned, itemrestrict.ownershipBanned, "OwnershipBanned");
+			parseMaterialListFromConfig(OwnershipBanned, ItemRestrict.ownershipBanned, "OwnershipBanned");
 			
 			//
 			//CRAFTING BANS 
@@ -58,9 +57,7 @@ public class RestrictedItemsHandler {
 			//
 			List<String> CraftingDisabled = ymlFormat.getStringList("CraftingDisabled");
 			//parse the strings from the config file
-			for (String s : CraftingDisabled) {
-				itemrestrict.craftingDisabled.add(s);
-			}
+            itemrestrict.craftingDisabled.addAll(CraftingDisabled);
 			
 			//
 			//BREWING BANS 
@@ -93,7 +90,7 @@ public class RestrictedItemsHandler {
 			//
 			//BLOCK BREAK BANS 
 			//
-			if (itemrestrict.getConfigHandler().getBoolean("General.Restrictions.BreakBans") == true) {
+			if (itemrestrict.getConfigHandler().getBoolean("General.Restrictions.BreakBans")) {
 				List<String> BlockBreakBanned = ymlFormat.getStringList("BlockBreakBanned");
 				//parse the strings from the config file
 				parseMaterialListFromConfig(BlockBreakBanned, itemrestrict.blockBreakBanned, "BlockBreakBanned");
@@ -125,9 +122,7 @@ public class RestrictedItemsHandler {
 			//
 			List<String> SmeltingDisabled = ymlFormat.getStringList("SmeltingDisabled");
 			//parse the strings from the config file
-			for (String s : SmeltingDisabled) {
-				itemrestrict.smeltingDisabled.add(s);
-			}
+            itemrestrict.smeltingDisabled.addAll(SmeltingDisabled);
 			
 			//
 			//WORLD BANS 
@@ -146,27 +141,27 @@ public class RestrictedItemsHandler {
 		materialCollection.clear();
 		
 		//for each string in the list
-		for(int i = 0; i < stringsToParse.size(); i++) {
-			//try to parse the string value into a material info
-			MaterialData materialData = MaterialData.fromString(stringsToParse.get(i));
-			
-			//null value returned indicates an error parsing the string from the config file
-			if(materialData == null) {
-				//show error in log
-				ItemRestrict.log.warning("ERROR: Unable to read material entry: " + stringsToParse.get(i) + " ,from RestrictedItems.yml file.");
-			}
-			
-			//otherwise store the valid entry in config data
-			else {
-				materialCollection.Add(materialData);
-			}
-		}		
+        for (String s : stringsToParse) {
+            //try to parse the string value into a material info
+            MaterialData materialData = MaterialData.fromString(s);
+
+            //null value returned indicates an error parsing the string from the config file
+            if (materialData == null) {
+                //show error in log
+                ItemRestrict.log.warning("ERROR: Unable to read material entry: " + s + " ,from RestrictedItems.yml file.");
+            }
+
+            //otherwise store the valid entry in config data
+            else {
+                materialCollection.Add(materialData);
+            }
+        }
 	}
 	
 	public MaterialData isBanned(ActionType actionType, Player player, Material type, short data, Location location) {
-		if (itemrestrict.getConfigHandler().getString("General.EnableOnAllWorlds") != "true") {
+		if (!itemrestrict.getConfigHandler().getString("General.EnableOnAllWorlds").equals("true")) {
 			if (location != null) {
-				if(!itemrestrict.enforcementWorlds.contains(location.getWorld())) return null;
+				if(!ItemRestrict.enforcementWorlds.contains(location.getWorld())) return null;
 			}
 		}
 		if (player != null && player.hasPermission("ItemRestrict.admin") || player != null && player.hasPermission("ItemRestrict.bypass")) return null;
@@ -203,7 +198,7 @@ public class RestrictedItemsHandler {
 			collectionToSearch = itemrestrict.smeltingBanned;
 			permissionNode = "smelt";
 		} else {
-			collectionToSearch = itemrestrict.ownershipBanned;
+			collectionToSearch = ItemRestrict.ownershipBanned;
 			permissionNode = "own";
 		}
 		
